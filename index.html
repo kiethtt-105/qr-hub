@@ -2,90 +2,115 @@
 <html lang="vi"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>QR Hub</title>
-<link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="icons/icon.svg">
+<link rel="apple-touch-icon" href="icon/icon-180.png"><link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="icon/icon.svg">
 <meta name="theme-color" content="#6366f1">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 </head><body>
+<svg width="0" height="0" style="position:absolute"><defs>
+<symbol id="i-qr" viewBox="0 0 24 24"><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2"/><rect x="7" y="7" width="4" height="4"/><rect x="13" y="7" width="4" height="4"/><rect x="7" y="13" width="4" height="4"/><path d="M14 14h3v3"/></symbol>
+<symbol id="i-zap" viewBox="0 0 24 24"><path d="M13 2 3 14h9l-1 8 10-12h-9z"/></symbol>
+<symbol id="i-link" viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7"/><path d="M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7"/></symbol>
+<symbol id="i-bank" viewBox="0 0 24 24"><path d="M3 21h18M5 21V10M9 21V10M15 21V10M19 21V10M2 10l10-6 10 6z"/></symbol>
+<symbol id="i-set" viewBox="0 0 24 24"><path d="M4 6h8M18 6h2M4 12h2M12 12h8M4 18h10M20 18h0"/><circle cx="15" cy="6" r="2"/><circle cx="9" cy="12" r="2"/><circle cx="17" cy="18" r="2"/></symbol>
+<symbol id="i-copy" viewBox="0 0 24 24"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></symbol>
+<symbol id="i-dl" viewBox="0 0 24 24"><path d="M12 3v12M7 10l5 5 5-5M4 21h16"/></symbol>
+<symbol id="i-up" viewBox="0 0 24 24"><path d="M12 15V3M7 8l5-5 5 5M4 21h16"/></symbol>
+<symbol id="i-trash" viewBox="0 0 24 24"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14"/></symbol>
+<symbol id="i-sync" viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-3-6.7L21 8M21 3v5h-5"/></symbol>
+<symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12 5 5 9-10"/></symbol>
+<symbol id="i-cloud" viewBox="0 0 24 24"><path d="M7 18a5 5 0 1 1 1-9.9A6 6 0 0 1 19 11a3.5 3.5 0 0 1-1 7z"/></symbol>
+<symbol id="i-pal" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="8" cy="11" r="1"/><circle cx="12" cy="7.5" r="1"/><circle cx="16" cy="11" r="1"/></symbol>
+<symbol id="i-save" viewBox="0 0 24 24"><path d="M5 3h11l3 3v15H5zM8 3v5h7V3M8 21v-7h8v7"/></symbol>
+<symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+<symbol id="i-pin" viewBox="0 0 24 24"><path d="M12 17v5M8 3h8l-1 7 3 3H6l3-3z"/></symbol>
+<symbol id="i-lock" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></symbol>
+</defs></svg>
+
 <div class="app">
 <aside>
- <div class="brand"><span class="logo">▦</span><b id="ttl">QR Hub</b></div>
+ <div class="brand"><span class="logo"><img src="icon/icon.svg" alt=""></span><b id="ttl">QR Hub</b></div>
  <nav id="nav">
-  <button data-t="bank"><i>💸</i><span>Chuyển khoản</span><em>1</em></button>
-  <button data-t="quick"><i>⚡</i><span>QR nhanh</span><em>2</em></button>
-  <button data-t="link"><i>🔗</i><span>Rút gọn link</span><em>3</em></button>
-  <button data-t="acc"><i>🏦</i><span>Tài khoản</span><em>4</em></button>
-  <button data-t="set"><i>⚙️</i><span>Cài đặt</span><em>5</em></button>
+  <button data-t="bank"><svg class="i"><use href="#i-qr"/></svg><span>Chuyển khoản</span><em>1</em></button>
+  <button data-t="quick"><svg class="i"><use href="#i-zap"/></svg><span>QR nhanh</span><em>2</em></button>
+  <button data-t="link"><svg class="i"><use href="#i-link"/></svg><span>Rút gọn link</span><em>3</em></button>
+  <button data-t="acc"><svg class="i"><use href="#i-bank"/></svg><span>Tài khoản</span><em>4</em></button>
+  <button data-t="set"><svg class="i"><use href="#i-set"/></svg><span>Cài đặt</span><svg class="i lk" id="lkIc" hidden><use href="#i-lock"/></svg><em>5</em></button>
  </nav>
- <div class="sync" id="sync"></div>
- <div class="foot">© Bản quyền thuộc về<br><b id="ftt">QR Hub</b></div>
+ <div class="sync" id="sync" title="Bấm để xem cài đặt kết nối"></div>
+ <div class="foot">© <b id="ftt">QR Hub</b></div>
 </aside>
 <main>
 
 <section id="bank" class="tab">
- <header><h1>QR chuyển khoản</h1><p>Tạo mã VietQR nhanh, lưu thành mẫu dùng lại.</p></header>
+ <header><h1>QR chuyển khoản</h1><p>Tạo mã VietQR trong vài giây và lưu thành mẫu dùng lại.</p></header>
  <div class="grid">
   <div class="card">
    <div class="f"><label>Tài khoản nhận</label><select id="bAcc"></select></div>
-   <div class="f"><label>Số tiền (để trống nếu để người chuyển tự nhập)</label><input id="bAmt" type="number" min="0" inputmode="numeric" placeholder="VD: 100000">
-    <div class="chips" id="chips"></div></div>
-   <div class="f"><label>Nội dung</label><input id="bNote" maxlength="50" placeholder="VD: Tien tro T11"></div>
-   <div class="f"><label>Lưu thành mẫu</label><div class="inline"><input id="bLabel" placeholder="Tên mẫu"><button class="btn p" id="bSave">Lưu</button></div></div>
-   <h3>📌 Mẫu đã lưu</h3><div id="qrList"></div>
+   <div class="f"><label>Số tiền <small>(để trống nếu người chuyển tự nhập)</small></label><input id="bAmt" type="number" min="0" inputmode="numeric" placeholder="VD: 100000"><div class="chips" id="chips"></div></div>
+   <div class="f"><label>Nội dung chuyển khoản</label><input id="bNote" maxlength="50" placeholder="VD: Tien tro T11"></div>
+   <div class="f"><label>Lưu thành mẫu</label><div class="inline"><input id="bLabel" placeholder="Tên mẫu, VD: Tiền trọ"><button class="btn p" id="bSave"><svg class="i"><use href="#i-save"/></svg>Lưu</button></div></div>
+   <div class="sep"></div><h4><svg class="i"><use href="#i-pin"/></svg>Mẫu đã lưu</h4><div id="qrList"></div>
   </div>
   <div class="card prev">
-   <div class="qrbox"><img id="bImg" alt="QR" hidden><div id="bEmpty" class="empty">Chưa có tài khoản.<br>Vào tab <b>Tài khoản</b> để thêm.</div></div>
+   <div class="qrbox"><img id="bImg" alt="QR" hidden><div id="bEmpty" class="empty"><p>Chưa có tài khoản nào.</p><div class="inline c"><button class="btn p" id="bImp">Nhập từ Google Sheet</button><button class="btn" id="bGo">Thêm thủ công</button></div></div></div>
    <div id="bInfo" class="info"></div>
-   <div class="inline"><button class="btn" id="bDl">⬇ Tải PNG</button><button class="btn" id="bCp">📋 Copy link</button></div>
+   <div class="inline c"><button class="btn" id="bDl"><svg class="i"><use href="#i-dl"/></svg>Tải PNG</button><button class="btn" id="bCp"><svg class="i"><use href="#i-copy"/></svg>Copy link</button></div>
   </div>
  </div>
 </section>
 
 <section id="quick" class="tab">
- <header><h1>QR nhanh</h1><p>Biến bất kỳ link hoặc văn bản nào thành mã QR.</p></header>
+ <header><h1>QR nhanh</h1><p>Biến bất kỳ link hoặc văn bản nào thành mã QR, tạo ngay khi bạn gõ.</p></header>
  <div class="grid">
-  <div class="card"><div class="f"><label>Nội dung</label><textarea id="qIn" rows="6" placeholder="Dán link hoặc nhập văn bản…"></textarea></div>
-   <div class="inline"><button class="btn" id="qClr">Xóa</button></div></div>
-  <div class="card prev"><div class="qrbox" id="qOut"><div class="empty">QR sẽ hiện ở đây</div></div><button class="btn" id="qDl">⬇ Tải PNG</button></div>
+  <div class="card"><div class="f"><label>Nội dung</label><textarea id="qIn" rows="7" placeholder="Dán link hoặc nhập văn bản…"></textarea></div><button class="btn" id="qClr">Xóa nội dung</button></div>
+  <div class="card prev"><div class="qrbox" id="qOut"></div><div class="inline c"><button class="btn p" id="qDl"><svg class="i"><use href="#i-dl"/></svg>Tải PNG</button></div></div>
  </div>
 </section>
 
 <section id="link" class="tab">
- <header><h1>Rút gọn link</h1><p>Link rút gọn chạy qua Apps Script, mỗi lượt mở được đếm lại.</p></header>
- <div class="card"><div id="lWarn" class="warn" hidden>Cần điền URL Web App trong tab Cài đặt thì link rút gọn mới dùng được.</div>
+ <header><h1>Rút gọn link</h1><p>Link rút gọn chạy qua Apps Script, mỗi lượt mở được đếm lại trong Sheet.</p></header>
+ <div class="card"><div id="lWarn" class="warn" hidden>Cần kết nối Google Sheet (tab Cài đặt) thì link rút gọn mới dùng được.</div>
   <div class="row3"><div class="f"><label>Link gốc</label><input id="lUrl" placeholder="https://…"></div>
-  <div class="f"><label>Mã (tùy chọn)</label><input id="lCode" placeholder="vd: zalo"></div>
-  <button class="btn p" id="lAdd">Rút gọn</button></div>
-  <div id="lList"></div></div>
+  <div class="f"><label>Mã rút gọn <small>(tùy chọn)</small></label><input id="lCode" placeholder="vd: zalo"></div>
+  <button class="btn p" id="lAdd"><svg class="i"><use href="#i-plus"/></svg>Rút gọn</button></div>
+  <div class="sep"></div><div id="lList"></div></div>
 </section>
 
 <section id="acc" class="tab">
- <header><h1>Tài khoản ngân hàng</h1><p>Số tài khoản nhận tiền dùng cho QR chuyển khoản.</p></header>
+ <header><h1>Tài khoản ngân hàng</h1><p>Các tài khoản nhận tiền dùng để tạo QR chuyển khoản.</p></header>
  <div class="card"><div class="row4">
-  <div class="f"><label>Tên chủ TK</label><input id="aName" placeholder="NGUYEN VAN A"></div>
+  <div class="f"><label>Tên chủ tài khoản</label><input id="aName" placeholder="NGUYEN VAN A"></div>
   <div class="f"><label>Số tài khoản</label><input id="aStk" inputmode="numeric" placeholder="0123456789"></div>
   <div class="f"><label>Ngân hàng</label><select id="aBin"></select></div>
-  <div class="f"><label>Mẫu QR</label><select id="aTpl"><option value="print">Đầy đủ (print)</option><option value="compact2">Gọn (compact2)</option><option value="compact">Nhỏ (compact)</option><option value="qr_only">Chỉ mã QR</option></select></div></div>
-  <button class="btn p" id="aAdd">+ Thêm tài khoản</button><div id="aList"></div></div>
+  <div class="f"><label>Kiểu QR</label><select id="aTpl"><option value="print">Đầy đủ</option><option value="compact2">Gọn</option><option value="compact">Nhỏ</option><option value="qr_only">Chỉ mã QR</option></select></div></div>
+  <button class="btn p" id="aAdd"><svg class="i"><use href="#i-plus"/></svg>Thêm tài khoản</button><div class="sep"></div><div id="aList"></div></div>
 </section>
 
 <section id="set" class="tab">
- <header><h1>Cài đặt</h1><p>Giao diện và kết nối Google Sheet.</p></header>
- <div class="card"><h3>🎨 Giao diện</h3><div class="row3">
+ <header><h1>Cài đặt</h1><p>Kết nối Google Sheet và tùy chỉnh giao diện.</p></header>
+ <div class="card lockc" id="lock" hidden><div class="lg"><svg class="i"><use href="#i-lock"/></svg></div><h4>Cài đặt đã được khóa</h4><p class="none">Nhập mật khẩu (đặt trong config.js) để mở.</p><div class="inline"><input type="password" id="pIn" placeholder="Mật khẩu" autocomplete="off"><button class="btn p" id="pOk">Mở khóa</button></div></div>
+ <div id="setBody">
+ <div class="card"><h4><svg class="i"><use href="#i-cloud"/></svg>Kết nối Google Sheet</h4>
+  <div id="cn" class="cn">Chưa kiểm tra. Nhập URL Web App và Token rồi bấm “Kiểm tra kết nối”.</div>
+  <div class="row2">
+  <div class="f"><label>URL Web App <small>(kết thúc bằng /exec)</small></label><input id="sUrl" placeholder="https://script.google.com/macros/s/…/exec"></div>
+  <div class="f"><label>Token <small>(= TOKEN trong Code.gs)</small></label><input id="sTok" type="password" placeholder="Nhập token"></div></div>
+  <div class="inline wrap"><button class="btn p" id="sTest"><svg class="i"><use href="#i-check"/></svg>Kiểm tra kết nối</button><button class="btn" id="sPull"><svg class="i"><use href="#i-dl"/></svg>Tải từ Sheet</button><button class="btn" id="sPush"><svg class="i"><use href="#i-up"/></svg>Đẩy lên Sheet</button><button class="btn" id="sScan"><svg class="i"><use href="#i-qr"/></svg>Chẩn đoán Sheet</button><button class="btn" id="sImpL"><svg class="i"><use href="#i-dl"/></svg>Nhập từ Sheet cũ</button><button class="btn" id="sSave"><svg class="i"><use href="#i-save"/></svg>Lưu</button></div>
+ </div>
+ <div class="card"><h4><svg class="i"><use href="#i-pal"/></svg>Giao diện</h4><div class="row3s">
   <div class="f"><label>Tên app</label><input id="sTitle"></div>
-  <div class="f"><label>Màu chủ đạo</label><input id="sColor" type="color"></div>
-  <div class="f"><label>Chế độ</label><select id="sMode"><option value="dark">Tối</option><option value="light">Sáng</option></select></div></div>
-  <h3>☁️ Google Sheet</h3><div class="row2">
-  <div class="f"><label>URL Web App (…/exec)</label><input id="sUrl" placeholder="https://script.google.com/macros/s/…/exec"></div>
-  <div class="f"><label>Token</label><input id="sTok" type="password" placeholder="trùng TOKEN trong Code.gs"></div></div>
-  <div class="inline wrap"><button class="btn p" id="sSave">Lưu cài đặt</button><button class="btn" id="sPull">⬇ Tải từ Sheet</button><button class="btn" id="sPush">⬆ Đẩy lên Sheet</button></div>
-  <h3>💾 Sao lưu</h3><div class="inline wrap"><button class="btn" id="sExp">Xuất JSON</button><label class="btn">Nhập JSON<input type="file" id="sImp" accept=".json" hidden></label></div>
+  <div class="f"><label>Chế độ</label><div class="seg" id="seg"><button data-m="dark">Tối</button><button data-m="light">Sáng</button></div></div>
+  <div class="f"><label>Màu chủ đạo</label><div class="sw" id="sw"></div></div></div>
+  <input type="hidden" id="sMode"><input type="color" id="sColor" hidden>
+ </div>
+ <div class="card"><h4><svg class="i"><use href="#i-save"/></svg>Sao lưu dữ liệu</h4><div class="inline wrap"><button class="btn" id="sExp"><svg class="i"><use href="#i-dl"/></svg>Xuất JSON</button><label class="btn"><svg class="i"><use href="#i-up"/></svg>Nhập JSON<input type="file" id="sImp" accept=".json" hidden></label><button class="btn" id="sLock"><svg class="i"><use href="#i-lock"/></svg>Khóa lại</button></div></div>
  </div>
 </section>
 
 </main></div>
-<button id="fab" title="Đồng bộ với Google Sheet">⟳</button>
+<button id="fab" title="Đồng bộ với Google Sheet"><svg class="i"><use href="#i-sync"/></svg></button>
 <div id="toast"></div>
 <script src="config.js"></script><script src="app.js"></script>
 </body></html>

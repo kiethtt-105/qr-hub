@@ -1,7 +1,8 @@
-// Cấu hình mặc định - sửa tại đây rồi push. (Có thể đổi thêm trong tab Cài đặt)
+// Cấu hình mặc định 
 window.CONFIG = {
-  url:   'https://script.google.com/macros/s/AKfycbzgfD-S15wW8MTQ_u7uV3tTzi1tkJTzc2Lzoudpe2Pmyt02em7m7kKrHsAeI-kg_i07/exec',   
-  token: '',   // phải trùng TOKEN trong Code.gs
+  url:   'https://script.google.com/macros/s/AKfycbzJqnq6325ehM9H1G0E5ZiHuXn1H5W-zUrzbgHG72upWMn0HVFLCgQ5HCluuRNBiQ-T/exec',   
+  token: 'kiet2026qr',  
+  pass: '0000',
   title: 'QR Hub',
   color: '#6366f1'
 };
