@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="vi"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>QR Hub</title>
+<link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="icons/icon.svg">
+<meta name="theme-color" content="#6366f1">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+</head><body>
+<div class="app">
+<aside>
+ <div class="brand"><span class="logo">▦</span><b id="ttl">QR Hub</b></div>
+ <nav id="nav">
+  <button data-t="bank"><i>💸</i><span>Chuyển khoản</span><em>1</em></button>
+  <button data-t="quick"><i>⚡</i><span>QR nhanh</span><em>2</em></button>
+  <button data-t="link"><i>🔗</i><span>Rút gọn link</span><em>3</em></button>
+  <button data-t="acc"><i>🏦</i><span>Tài khoản</span><em>4</em></button>
+  <button data-t="set"><i>⚙️</i><span>Cài đặt</span><em>5</em></button>
+ </nav>
+ <div class="sync" id="sync"></div>
+ <div class="foot">© Bản quyền thuộc về<br><b id="ftt">QR Hub</b></div>
+</aside>
+<main>
+
+<section id="bank" class="tab">
+ <header><h1>QR chuyển khoản</h1><p>Tạo mã VietQR nhanh, lưu thành mẫu dùng lại.</p></header>
+ <div class="grid">
+  <div class="card">
+   <div class="f"><label>Tài khoản nhận</label><select id="bAcc"></select></div>
+   <div class="f"><label>Số tiền (để trống nếu để người chuyển tự nhập)</label><input id="bAmt" type="number" min="0" inputmode="numeric" placeholder="VD: 100000">
+    <div class="chips" id="chips"></div></div>
+   <div class="f"><label>Nội dung</label><input id="bNote" maxlength="50" placeholder="VD: Tien tro T11"></div>
+   <div class="f"><label>Lưu thành mẫu</label><div class="inline"><input id="bLabel" placeholder="Tên mẫu"><button class="btn p" id="bSave">Lưu</button></div></div>
+   <h3>📌 Mẫu đã lưu</h3><div id="qrList"></div>
+  </div>
+  <div class="card prev">
+   <div class="qrbox"><img id="bImg" alt="QR" hidden><div id="bEmpty" class="empty">Chưa có tài khoản.<br>Vào tab <b>Tài khoản</b> để thêm.</div></div>
+   <div id="bInfo" class="info"></div>
+   <div class="inline"><button class="btn" id="bDl">⬇ Tải PNG</button><button class="btn" id="bCp">📋 Copy link</button></div>
+  </div>
+ </div>
+</section>
+
+<section id="quick" class="tab">
+ <header><h1>QR nhanh</h1><p>Biến bất kỳ link hoặc văn bản nào thành mã QR.</p></header>
+ <div class="grid">
+  <div class="card"><div class="f"><label>Nội dung</label><textarea id="qIn" rows="6" placeholder="Dán link hoặc nhập văn bản…"></textarea></div>
+   <div class="inline"><button class="btn" id="qClr">Xóa</button></div></div>
+  <div class="card prev"><div class="qrbox" id="qOut"><div class="empty">QR sẽ hiện ở đây</div></div><button class="btn" id="qDl">⬇ Tải PNG</button></div>
+ </div>
+</section>
+
+<section id="link" class="tab">
+ <header><h1>Rút gọn link</h1><p>Link rút gọn chạy qua Apps Script, mỗi lượt mở được đếm lại.</p></header>
+ <div class="card"><div id="lWarn" class="warn" hidden>Cần điền URL Web App trong tab Cài đặt thì link rút gọn mới dùng được.</div>
+  <div class="row3"><div class="f"><label>Link gốc</label><input id="lUrl" placeholder="https://…"></div>
+  <div class="f"><label>Mã (tùy chọn)</label><input id="lCode" placeholder="vd: zalo"></div>
+  <button class="btn p" id="lAdd">Rút gọn</button></div>
+  <div id="lList"></div></div>
+</section>
+
+<section id="acc" class="tab">
+ <header><h1>Tài khoản ngân hàng</h1><p>Số tài khoản nhận tiền dùng cho QR chuyển khoản.</p></header>
+ <div class="card"><div class="row4">
+  <div class="f"><label>Tên chủ TK</label><input id="aName" placeholder="NGUYEN VAN A"></div>
+  <div class="f"><label>Số tài khoản</label><input id="aStk" inputmode="numeric" placeholder="0123456789"></div>
+  <div class="f"><label>Ngân hàng</label><select id="aBin"></select></div>
+  <div class="f"><label>Mẫu QR</label><select id="aTpl"><option value="print">Đầy đủ (print)</option><option value="compact2">Gọn (compact2)</option><option value="compact">Nhỏ (compact)</option><option value="qr_only">Chỉ mã QR</option></select></div></div>
+  <button class="btn p" id="aAdd">+ Thêm tài khoản</button><div id="aList"></div></div>
+</section>
+
+<section id="set" class="tab">
+ <header><h1>Cài đặt</h1><p>Giao diện và kết nối Google Sheet.</p></header>
+ <div class="card"><h3>🎨 Giao diện</h3><div class="row3">
+  <div class="f"><label>Tên app</label><input id="sTitle"></div>
+  <div class="f"><label>Màu chủ đạo</label><input id="sColor" type="color"></div>
+  <div class="f"><label>Chế độ</label><select id="sMode"><option value="dark">Tối</option><option value="light">Sáng</option></select></div></div>
+  <h3>☁️ Google Sheet</h3><div class="row2">
+  <div class="f"><label>URL Web App (…/exec)</label><input id="sUrl" placeholder="https://script.google.com/macros/s/…/exec"></div>
+  <div class="f"><label>Token</label><input id="sTok" type="password" placeholder="trùng TOKEN trong Code.gs"></div></div>
+  <div class="inline wrap"><button class="btn p" id="sSave">Lưu cài đặt</button><button class="btn" id="sPull">⬇ Tải từ Sheet</button><button class="btn" id="sPush">⬆ Đẩy lên Sheet</button></div>
+  <h3>💾 Sao lưu</h3><div class="inline wrap"><button class="btn" id="sExp">Xuất JSON</button><label class="btn">Nhập JSON<input type="file" id="sImp" accept=".json" hidden></label></div>
+ </div>
+</section>
+
+</main></div>
+<button id="fab" title="Đồng bộ với Google Sheet">⟳</button>
+<div id="toast"></div>
+<script src="config.js"></script><script src="app.js"></script>
+</body></html>
