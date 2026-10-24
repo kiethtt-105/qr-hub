@@ -1,8 +1,11 @@
+import { safeEq } from './_sec.js';
+
 const { GITHUB_TOKEN: T, GITHUB_OWNER: O, GITHUB_REPO: R, GITHUB_BRANCH: B = 'main' } = process.env;
 const url = p => `https://api.github.com/repos/${O}/${R}/contents/${p}`;
 const H = { Authorization: `Bearer ${T}`, Accept: 'application/vnd.github+json', 'User-Agent': 'qr-app' };
 
-export const isAdmin = req => !!process.env.ADMIN_KEY && req.headers['x-admin-key'] === process.env.ADMIN_KEY;
+export const hasKey = req => !!req.headers['x-admin-key'];
+export const isAdmin = req => !!process.env.ADMIN_KEY && hasKey(req) && safeEq(req.headers['x-admin-key'], process.env.ADMIN_KEY);
 
 export async function read(path, def) {
   const r = await fetch(`${url(path)}?ref=${B}`, { headers: H, cache: 'no-store' });

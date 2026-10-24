@@ -98,9 +98,19 @@ $('#go').onclick=async()=>{const o=$('#out');o.className='msg';if(READONLY){o.te
 
 (async()=>{
   try{banks=await getBanks()}catch{}
-  cfg=await(await fetch(READONLY?'data/config.json':'/api/config')).json();
+  try{
+    if(READONLY){cfg=await(await fetch('data/config.json')).json()}
+    else{
+      const k=sessionStorage.getItem('ak'),h=k?{'x-admin-key':k}:{};
+      cfg=await(await fetch('/api/config',{headers:h})).json();
+      if(cfg.locked){sessionStorage.removeItem('ak');cfg=await call('/api/config','GET')} // hỏi ADMIN_KEY để mở thông tin ngân hàng
+    }
+  }catch(e){cfg={bank:{bin:'',bankName:'',accountNo:'',accountName:''},qrTemplate:'compact2',transactionTemplates:[{name:'Chuyển khoản',content:'CK {ma}'}],display:{title:'',showAmount:true,showAccount:true}};$('#saveMsg').className='msg err';$('#saveMsg').textContent=e.message}
   fill();render();
 })();
+if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
 </script>
+<script src="assets/config.js"></script>
+<script src="assets/quicklinks.js" defer></script>
 </body>
 </html>

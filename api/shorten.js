@@ -1,6 +1,5 @@
 import { update, isAdmin } from './_gh.js';
-
-const ip = req => (req.headers['x-forwarded-for'] || '').split(',')[0].trim();
+import { hashIp } from './_sec.js';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).end();
@@ -21,7 +20,7 @@ export default async function handler(req, res) {
     }, `link: tạo ${code}`);
     if (taken) return res.status(409).json({ error: 'Mã đã tồn tại, thử mã khác' });
 
-    await update('data/logs.json', [], logs => [...logs, { t: now, type: 'create', code, url: u.href, ip: ip(req) }], `log: tạo ${code}`);
+    await update('data/logs.json', [], logs => [...logs, { t: now, type: 'create', code, url: u.href, ip: hashIp(req) }], `log: tạo ${code}`);
     const host = req.headers['x-forwarded-host'] || req.headers.host;
     res.json({ code, short: `https://${host}/s/${code}` });
   } catch (e) { res.status(500).json({ error: e.message }); }
