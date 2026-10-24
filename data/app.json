@@ -1,1 +1,23 @@
+<<<<<<< HEAD
 { "updated": 0, "accounts": [], "qrs": [], "set": {} }
+=======
+{
+  "updated": 1792846931810,
+  "accounts": [
+    {
+      "id": "4q1ynv",
+      "name": "enc:v1:BzoOr6LYemjO5JEkFJLFzWlnLfd+D8/TdoDEqwvEUM5OoTWSi+q/HVMyr6BAIAJp",
+      "stk": "enc:v1:KHN1HYg1/xreSG6efyStzOfqmM6G++Lm2lG0DNBKsQDFVokFIus=",
+      "bin": "970415",
+      "template": "qr_only",
+      "alias": "VCB"
+    }
+  ],
+  "qrs": [],
+  "set": {
+    "title": "QR Hub",
+    "color": "#6366f1",
+    "mode": "light"
+  }
+}
+>>>>>>> b055836f81dd502d28d8f76fb8c5dfa08aa70d8d
