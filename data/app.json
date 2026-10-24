@@ -1,6 +1,15 @@
 {
-  "updated": 1792846625735,
-  "accounts": [],
+  "updated": 1792846931810,
+  "accounts": [
+    {
+      "id": "4q1ynv",
+      "name": "enc:v1:BzoOr6LYemjO5JEkFJLFzWlnLfd+D8/TdoDEqwvEUM5OoTWSi+q/HVMyr6BAIAJp",
+      "stk": "enc:v1:KHN1HYg1/xreSG6efyStzOfqmM6G++Lm2lG0DNBKsQDFVokFIus=",
+      "bin": "970415",
+      "template": "qr_only",
+      "alias": "VCB"
+    }
+  ],
   "qrs": [],
   "set": {
     "title": "QR Hub",
