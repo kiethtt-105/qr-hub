@@ -1,4 +1,4 @@
-const V='qrhub-v8',SHELL=['./','index.html','assets/config.js','assets/quicklinks.js','manifest.webmanifest','icon/icon.svg'];
+const V='qrhub-v9',SHELL=['./','index.html','assets/style.css','assets/app.js','assets/quicklinks.js','manifest.webmanifest','icon/icon.svg'];
 // Mỗi file nạp riêng: thiếu một file không làm hỏng việc cài service worker
 self.addEventListener('install',e=>{e.waitUntil(caches.open(V).then(c=>Promise.all(SHELL.map(u=>c.add(u).catch(()=>{})))));self.skipWaiting()});
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x!==V).map(x=>caches.delete(x)))));self.clients.claim()});

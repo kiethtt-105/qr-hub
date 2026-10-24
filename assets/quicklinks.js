@@ -88,6 +88,7 @@
 @keyframes qlIn{from{transform:translateX(24px);opacity:0}}
 @media(prefers-reduced-motion:reduce){#qlPanel{animation:none}}
 #qlPanel *{box-sizing:border-box}
+#qlPanel header{margin:0}
 #qlPanel header{display:flex;align-items:center;gap:10px;padding:16px 18px;border-bottom:1px solid var(--bd,var(--line,#d5dce2))}
 #qlPanel header h2{margin:0;font-size:18px;font-weight:700;flex:1}
 #qlPanel button{font:inherit;cursor:pointer}

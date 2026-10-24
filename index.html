@@ -2,115 +2,34 @@
 <html lang="vi">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>QR chuyển khoản & rút gọn link</title>
-<style>
-:root{--bg:#f3f5f7;--card:#fff;--ink:#14202b;--mute:#5b6b79;--line:#d5dce2;--acc:#0a5c8f;color-scheme:light}
-@media(prefers-color-scheme:dark){:root{--bg:#10171d;--card:#18222b;--ink:#e8eef3;--mute:#93a3b1;--line:#2a3743;--acc:#5db4ea;color-scheme:dark}}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 system-ui,sans-serif}
-main{max-width:880px;margin:0 auto;padding:20px}
-nav{display:flex;gap:4px;border-bottom:1px solid var(--line);margin-bottom:20px}
-nav button{background:none;border:0;padding:10px 16px;color:var(--mute);font:inherit;cursor:pointer;border-bottom:3px solid transparent}
-nav button[aria-selected=true]{color:var(--ink);border-color:var(--acc);font-weight:600}
-.grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}@media(max-width:700px){.grid{grid-template-columns:1fr}}
-.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:18px}
-label{display:block;font-size:14px;color:var(--mute);margin:12px 0 4px}
-input,select{width:100%;padding:9px 10px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--ink);font:inherit}
-input[type=checkbox]{width:auto;margin-right:6px}.row{display:flex;gap:8px}.row>*{flex:1}
-button.p{background:var(--acc);color:var(--bg);border:0;border-radius:6px;padding:10px 14px;font:inherit;font-weight:600;cursor:pointer;margin-top:14px}
-button.s{background:none;border:1px solid var(--line);color:var(--ink);border-radius:6px;padding:10px 14px;font:inherit;cursor:pointer;margin-top:14px}
-button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
-.qr{text-align:center}.qr img{max-width:100%;border-radius:8px;background:#fff}.msg{margin-top:10px;font-size:14px;color:var(--mute);word-break:break-all}.err{color:#c0392b}
-[hidden]{display:none}
-</style>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>QR Hub</title>
+<meta name="theme-color" content="#0a0f1f">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon/icon-180.png">
+<link rel="stylesheet" href="assets/style.css">
 </head>
 <body>
-<main>
-<nav role="tablist"><button role="tab" aria-selected="true" data-t="qr">QR chuyển khoản</button><button role="tab" aria-selected="false" data-t="link">Rút gọn link</button></nav>
-
-<section id="qr" class="grid">
-  <div class="card">
-    <label>Số tiền (VND)</label><input id="amount" type="number" min="0" inputmode="numeric">
-    <label>Mẫu nội dung</label><select id="tpl"></select>
-    <label>Mã / ghi chú (thay vào {ma})</label><input id="ma">
-    <details style="margin-top:16px"><summary style="cursor:pointer">Thông tin ngân hàng của tôi</summary>
-      <label>Ngân hàng</label><select id="bank"></select>
-      <label>Số tài khoản</label><input id="acc" inputmode="numeric">
-      <label>Tên chủ tài khoản</label><input id="name">
-      <label>Kiểu mã QR</label><select id="qrt"><option>compact2</option><option>compact</option><option>qr_only</option><option>print</option></select>
-      <label>Tiêu đề hiển thị</label><input id="title">
-      <label><input id="sAmt" type="checkbox">Hiện số tiền</label>
-      <label><input id="sAcc" type="checkbox">Hiện số tài khoản</label>
-      <label>Mẫu nội dung (mỗi dòng: Tên | nội dung có {ma})</label><textarea id="tpls" rows="3" style="width:100%;padding:9px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--ink);font:inherit"></textarea>
-      <button class="p" id="save">Lưu vào Git</button><div class="msg" id="saveMsg"></div>
-    </details>
-  </div>
-  <div class="card qr"><div id="view"><p class="msg">Nhập thông tin ngân hàng để tạo mã.</p></div></div>
-</section>
-
-<section id="link" hidden class="card">
-  <label>Link gốc</label><input id="url" type="url" placeholder="https://...">
-  <label>Mã tuỳ chọn (bỏ trống để tự tạo)</label><input id="code">
-  <button class="p" id="go">Rút gọn</button><div class="msg" id="out"></div>
-</section>
-</main>
-<script>
-const $=s=>document.querySelector(s);
-const READONLY=location.hostname.endsWith('github.io'); // GitHub Pages: không có API, chỉ đọc
-let cfg,banks=[];
-
-async function getBanks(){ // cache trình duyệt 7 ngày, không lưu vào JSON
-  try{const c=JSON.parse(localStorage.getItem('vietqr_banks')||'null');if(c&&Date.now()-c.t<6048e5)return c.d}catch{}
-  const j=await(await fetch('https://api.vietqr.io/v2/banks')).json();
-  localStorage.setItem('vietqr_banks',JSON.stringify({t:Date.now(),d:j.data}));return j.data;
-}
-const adminKey=()=>sessionStorage.getItem('ak')||(sessionStorage.setItem('ak',prompt('Nhập ADMIN_KEY')||''),sessionStorage.getItem('ak'));
-const call=async(u,m,b)=>{const r=await fetch(u,{method:m,headers:{'content-type':'application/json','x-admin-key':adminKey()},body:b&&JSON.stringify(b)});const j=await r.json();if(!r.ok){if(r.status===401)sessionStorage.removeItem('ak');throw Error(j.error)}return j};
-
-function fill(){
-  $('#bank').innerHTML=banks.map(b=>`<option value="${b.bin}">${b.shortName} - ${b.name}</option>`).join('');
-  $('#bank').value=cfg.bank.bin;$('#acc').value=cfg.bank.accountNo;$('#name').value=cfg.bank.accountName;
-  $('#qrt').value=cfg.qrTemplate;$('#title').value=cfg.display.title;$('#sAmt').checked=cfg.display.showAmount;$('#sAcc').checked=cfg.display.showAccount;
-  $('#tpls').value=cfg.transactionTemplates.map(t=>`${t.name} | ${t.content}`).join('\n');
-  $('#tpl').innerHTML=cfg.transactionTemplates.map((t,i)=>`<option value="${i}">${t.name}</option>`).join('');
-}
-function read(){
-  const b=banks.find(x=>x.bin===$('#bank').value);
-  cfg={bank:{bin:$('#bank').value,bankName:b?b.shortName:'',accountNo:$('#acc').value.trim(),accountName:$('#name').value.trim()},qrTemplate:$('#qrt').value,
-    transactionTemplates:$('#tpls').value.split('\n').filter(l=>l.includes('|')).map(l=>{const[n,...c]=l.split('|');return{name:n.trim(),content:c.join('|').trim()}}),
-    display:{title:$('#title').value,showAmount:$('#sAmt').checked,showAccount:$('#sAcc').checked}};
-}
-function render(){
-  const {bank:b,display:d}=cfg;
-  if(!b.bin||!b.accountNo){$('#view').innerHTML='<p class="msg">Nhập thông tin ngân hàng để tạo mã.</p>';return}
-  const t=cfg.transactionTemplates[$('#tpl').value]||{content:'{ma}'};
-  const info=t.content.replace('{ma}',$('#ma').value);const amt=$('#amount').value;
-  const q=new URLSearchParams({addInfo:info,accountName:b.accountName});if(amt)q.set('amount',amt);
-  $('#view').innerHTML=`<h3>${d.title}</h3><img alt="Mã QR chuyển khoản" src="https://img.vietqr.io/image/${b.bin}-${b.accountNo}-${cfg.qrTemplate}.png?${q}">`+
-   `<p class="msg">${b.bankName}${d.showAccount?' · '+b.accountNo+' · '+b.accountName:''}</p>`+(d.showAmount&&amt?`<p><b>${Number(amt).toLocaleString('vi-VN')} đ</b></p>`:'')+`<p class="msg">${info}</p>`;
-}
-document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{document.querySelectorAll('nav button').forEach(x=>x.setAttribute('aria-selected',x===b));$('#qr').hidden=b.dataset.t!=='qr';$('#link').hidden=b.dataset.t!=='link'});
-['amount','tpl','ma','bank','acc','name','qrt','title','sAmt','sAcc','tpls'].forEach(i=>$('#'+i).addEventListener('input',()=>{read();if(!['amount','ma','tpl'].includes(i))$('#tpl').innerHTML=cfg.transactionTemplates.map((t,k)=>`<option value="${k}">${t.name}</option>`).join('');render()}));
-$('#save').onclick=async()=>{const m=$('#saveMsg');m.className='msg';if(READONLY){m.textContent='Bản GitHub Pages chỉ xem. Lưu cấu hình trên bản Vercel.';return}
-  try{read();cfg=await call('/api/config','PUT',cfg);m.textContent='Đã lưu vào Git.'}catch(e){m.className='msg err';m.textContent=e.message}};
-$('#go').onclick=async()=>{const o=$('#out');o.className='msg';if(READONLY){o.textContent='Rút gọn link cần bản Vercel (cần API + token).';return}
-  try{const r=await call('/api/shorten','POST',{url:$('#url').value,code:$('#code').value||undefined});o.innerHTML=`<a href="${r.short}" target="_blank">${r.short}</a> <button class="s" id="cp">Sao chép</button>`;$('#cp').onclick=()=>navigator.clipboard.writeText(r.short)}catch(e){o.className='msg err';o.textContent=e.message}};
-
-(async()=>{
-  try{banks=await getBanks()}catch{}
-  try{
-    if(READONLY){cfg=await(await fetch('data/config.json')).json()}
-    else{
-      const k=sessionStorage.getItem('ak'),h=k?{'x-admin-key':k}:{};
-      cfg=await(await fetch('/api/config',{headers:h})).json();
-      if(cfg.locked){sessionStorage.removeItem('ak');cfg=await call('/api/config','GET')} // hỏi ADMIN_KEY để mở thông tin ngân hàng
-    }
-  }catch(e){cfg={bank:{bin:'',bankName:'',accountNo:'',accountName:''},qrTemplate:'compact2',transactionTemplates:[{name:'Chuyển khoản',content:'CK {ma}'}],display:{title:'',showAmount:true,showAccount:true}};$('#saveMsg').className='msg err';$('#saveMsg').textContent=e.message}
-  fill();render();
-})();
-if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
-</script>
-<script src="assets/config.js"></script>
+<div class="app">
+  <aside>
+    <div class="brand"><div class="logo"><img src="icon/icon-192.png" alt=""></div><b id="ttl">QR Hub</b></div>
+    <nav id="nav" aria-label="Chức năng"></nav>
+    <div class="sync" id="sync" role="status"></div>
+    <div class="foot"><b id="ftt">QR Hub</b></div>
+  </aside>
+  <main>
+    <div id="lock" class="lockc card" hidden>
+      <div class="lg"><svg class="i" viewBox="0 0 24 24"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div>
+      <h4>Nhập khoá quản trị</h4>
+      <p class="none" id="lockMsg">Dữ liệu được mã hoá. Cần ADMIN_KEY để mở.</p>
+      <div class="inline"><input id="pIn" type="password" autocomplete="current-password" placeholder="ADMIN_KEY" aria-label="ADMIN_KEY"><button class="btn p" id="pOk" type="button">Mở khoá</button></div>
+    </div>
+    <div id="views" hidden></div>
+  </main>
+</div>
+<div id="toast" role="status"></div>
+<script src="assets/app.js"></script>
 <script src="assets/quicklinks.js" defer></script>
 </body>
 </html>

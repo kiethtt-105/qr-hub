@@ -1,5 +1,5 @@
 {
-  "bank": { "bin": "970436", "bankName": "Vietcombank", "accountNo": "", "accountName": "" },
+  "bank": { "bin": "970422", "bankName": "Vietcombank", "accountNo": "1031451081", "accountName": "Huynh Tran Tuan Kiet" },
   "qrTemplate": "compact2",
   "transactionTemplates": [
     { "name": "Thanh toán đơn hàng", "content": "TT don {ma}" },
