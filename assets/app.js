@@ -23,13 +23,13 @@ const IC = {
 };
 const ic = n => `<svg class="i" viewBox="0 0 24 24" aria-hidden="true">${IC[n]}</svg>`;
 const TABS = [
-  ['qr', 'QR chuyển khoản', 'qr'], ['quick', 'QR nhanh', 'zap'], ['link', 'Rút gọn link', 'link'],
-  ['acc', 'Tài khoản', 'user'], ['mark', 'Dấu trang', 'mark'], ['log', 'Nhật ký', 'log'], ['set', 'Cài đặt', 'set']
+  ['qr', 'QR chuyển khoản', 'qr', 'Q', 'Chuyển khoản'], ['quick', 'QR nhanh', 'zap', 'N', 'QR nhanh'], ['link', 'Rút gọn link', 'link', 'L', 'Rút gọn'],
+  ['acc', 'Tài khoản', 'user', 'T', 'Tài khoản'], ['mark', 'Dấu trang', 'mark', 'B', 'Dấu trang'], ['log', 'Nhật ký', 'log', 'K', 'Nhật ký'], ['set', 'Cài đặt', 'set', 'C', 'Cài đặt']
 ];
 
 /* ---------- trạng thái ---------- */
 let key = sessionStorage.getItem('ak') || '', ready = false, dirty = false, banks = [], eid = null;
-const D = { accounts: [], qrs: [], set: { title: 'QR Hub', color: '#6366f1', mode: 'dark' } };
+const D = { accounts: [], qrs: [], set: { title: 'QR Hub', color: '#0f8a6a', mode: 'light' } };
 try { Object.assign(D.set, JSON.parse(localStorage.getItem('qh_set') || '{}')); } catch {}
 let logs = [], links = [], logFilter = 'all';
 
@@ -53,8 +53,12 @@ async function shareImg(u) {
 /* ---------- API ---------- */
 async function api(u, m = 'GET', b) {
   const r = await fetch(u, { method: m, headers: { 'content-type': 'application/json', 'x-admin-key': key }, body: b === undefined ? undefined : JSON.stringify(b) });
-  const j = await r.json().catch(() => ({}));
-  if (!r.ok) { if (r.status === 401) lockUI('Sai hoặc thiếu ADMIN_KEY'); throw Error(j.error || 'Lỗi ' + r.status); }
+  const raw = await r.text(); let j = null; try { j = JSON.parse(raw); } catch {}
+  if (!r.ok) {
+    if (r.status === 401) lockUI('Sai hoặc thiếu ADMIN_KEY');
+    throw Error((j && j.error) || (r.status === 404 ? 'Không tìm thấy API. Hãy chạy bằng "vercel dev", không dùng Live Server.' : 'Lỗi ' + r.status));
+  }
+  if (j === null) throw Error('Máy chủ trả về dữ liệu không phải JSON');
   return j;
 }
 async function push() {
@@ -72,31 +76,42 @@ function lockUI(msg) {
   $('lockMsg').textContent = msg || 'Dữ liệu được mã hoá. Cần ADMIN_KEY để mở.'; setSync('Đang khoá', false);
   if (!lockUI.f) { lockUI.f = 1; $('pIn').focus(); }
 }
+function normalize(s) { // ràng buộc dữ liệu: kiểu, trùng id, khoá ngoại
+  s = s && typeof s === 'object' ? s : {}; let fixed = 0; const ids = new Set(), qids = new Set();
+  const accounts = (Array.isArray(s.accounts) ? s.accounts : []).filter(a => { const ok = a && /^\d{6}$/.test(String(a.bin)) && /^[0-9A-Za-z]{4,30}$/.test(String(a.stk)); if (!ok) fixed++; return ok; })
+    .map(a => { let id = String(a.id || ''); if (!id || ids.has(id)) { id = uid(); fixed++; } ids.add(id); return { id, name: String(a.name || ''), stk: String(a.stk), bin: String(a.bin), template: ['compact2', 'compact', 'qr_only', 'print'].includes(a.template) ? a.template : 'compact2', alias: String(a.alias || '') }; });
+  const qrs = (Array.isArray(s.qrs) ? s.qrs : []).filter(q => { const ok = q && q.label && ids.has(String(q.accId)); if (!ok) fixed++; return ok; })
+    .map(q => { let id = String(q.id || ''); if (!id || qids.has(id)) { id = uid(); fixed++; } qids.add(id); return { id, label: String(q.label), accId: String(q.accId), amount: String(q.amount || '').replace(/\D/g, ''), note: String(q.note || '') }; });
+  return { accounts, qrs, set: s.set && typeof s.set === 'object' ? s.set : {}, fixed };
+}
 async function unlock(k) {
-  key = k;
+  key = k; $('pOk').disabled = true; $('lockMsg').textContent = 'Đang tải dữ liệu…'; setSync('Đang tải…', null);
   try {
-    const s = await api('/api/store');
-    D.accounts = s.accounts || []; D.qrs = s.qrs || []; Object.assign(D.set, s.set || {});
-    sessionStorage.setItem('ak', k); ready = true; persistSet();
-    $('lock').hidden = true; $('views').hidden = false; $('nav').style.visibility = '';
-    $('pIn').value = ''; theme(); render(); setSync('Đã kết nối', true);
+    const c = normalize(await api('/api/store'));
+    D.accounts = c.accounts; D.qrs = c.qrs; Object.assign(D.set, c.set);
+    if (D.set.color === '#6366f1') D.set.color = '#0f8a6a';
+    sessionStorage.setItem('ak', k); persistSet(); theme(); render(); // dữ liệu xong mới hiển thị giao diện
+    ready = true; $('lock').hidden = true; $('views').hidden = false; $('nav').style.visibility = '';
+    $('pIn').value = ''; setSync('Đã kết nối', true);
     show(location.hash.slice(1) || 'qr');
+    if (c.fixed) { toast('Đã sửa ' + c.fixed + ' mục dữ liệu không hợp lệ'); save(); }
   } catch (e) { key = ''; sessionStorage.removeItem('ak'); lockUI(e.message); }
+  $('pOk').disabled = false;
 }
 $('pOk').onclick = () => $('pIn').value && unlock($('pIn').value);
 $('pIn').onkeydown = e => { if (e.key === 'Enter') $('pOk').click(); };
 
 /* ---------- giao diện ---------- */
-const COLORS = ['#6366f1', '#8b5cf6', '#ec4899', '#ef4444', '#f59e0b', '#10b981', '#0ea5e9'];
+const COLORS = ['#0f8a6a', '#2563eb', '#7c3aed', '#db2777', '#dc2626', '#d97706', '#475569'];
 function theme() {
   document.documentElement.style.setProperty('--ac', D.set.color);
-  document.body.classList.toggle('light', D.set.mode === 'light');
+  document.body.classList.toggle('dark', D.set.mode === 'dark');
   $('ttl').textContent = $('ftt').textContent = D.set.title; document.title = D.set.title;
   if (document.activeElement !== $('sTitle')) $('sTitle').value = D.set.title;
   QA('#seg button').forEach(b => b.classList.toggle('on', b.dataset.m === D.set.mode));
   QA('#sw button[data-c]').forEach(b => b.classList.toggle('on', b.dataset.c === D.set.color));
 }
-$('nav').innerHTML = TABS.map(([id, name, i]) => `<button type="button" data-t="${id}">${ic(i)}<span>${name}</span>${id === 'mark' ? '<em>^K</em>' : ''}</button>`).join('');
+$('nav').innerHTML = TABS.map(([id, name, i, k, short]) => `<button type="button" data-t="${id}" title="${name} (Alt+${k})" aria-keyshortcuts="Alt+${k}">${ic(i)}<span>${short}</span><em>Alt+${k}</em></button>`).join('');
 $('nav').onclick = e => {
   const b = e.target.closest('button'); if (!b || !ready) return;
   if (b.dataset.t === 'mark') return window.QuickLinks && window.QuickLinks.open();
@@ -116,7 +131,7 @@ $('views').innerHTML = `
  <div class="grid"><div class="card">
   <h4>${ic('qr')}Thông tin thanh toán</h4>
   <div class="f"><label for="bAcc">Tài khoản nhận</label><select id="bAcc"></select></div>
-  <div class="f"><label for="bAmt">Số tiền (VND)</label><input id="bAmt" type="number" min="0" inputmode="numeric" placeholder="Để trống nếu người chuyển tự nhập"><div class="chips" id="chips"></div></div>
+  <div class="f"><label for="bAmt">Số tiền <small>(Alt+A để nhập nhanh, để trống nếu người chuyển tự nhập)</small></label><div class="amt"><input id="bAmt" type="number" min="0" inputmode="numeric" placeholder="0"><span>đ</span></div><div class="chips" id="chips"></div></div>
   <div class="f"><label for="bNote">Nội dung <small>(tự bỏ dấu, tối đa 50 ký tự)</small></label><input id="bNote" maxlength="50"></div>
   <div class="sep"></div>
   <div class="inline"><input id="bLabel" placeholder="Tên mẫu, ví dụ: Học phí tháng" aria-label="Tên mẫu"><button class="btn" id="bSave" type="button">${ic('plus')}Lưu mẫu</button></div>
@@ -165,7 +180,9 @@ $('views').innerHTML = `
  <div class="card"><h4>${ic('dl')}Sao lưu</h4>
   <p class="none">File sao lưu chứa số tài khoản ở dạng chữ thường. Hãy cất ở nơi an toàn, đừng commit lên Git.</p>
   <div class="inline wrap"><button class="btn" id="sExp" type="button">Xuất JSON</button><label class="btn" style="margin:0">Nhập JSON<input id="sImp" type="file" accept=".json,application/json" hidden></label>
-   <button class="btn x" id="sLock" type="button">Khoá lại</button></div></div></section>`;
+   <button class="btn x" id="sLock" type="button">Khoá lại</button></div></div>
+ <div class="card"><h4>${ic('log')}Chẩn đoán dữ liệu</h4><p class="none" style="margin-bottom:12px">Kiểm tra biến môi trường và khả năng đọc các file JSON trên GitHub.</p>
+  <button class="btn p" id="hRun" type="button">Kiểm tra</button><div id="hOut" style="margin-top:12px"></div></div></section>`;
 
 $('sw').innerHTML = COLORS.map(c => `<button type="button" data-c="${c}" style="background:${c}" title="${c}" aria-label="Màu ${c}"></button>`).join('') + '<input type="color" id="swc" title="Màu tuỳ chọn" aria-label="Màu tuỳ chọn">';
 $('sw').onclick = e => { const c = e.target.dataset.c; if (c) { D.set.color = c; theme(); save(); } };
@@ -173,6 +190,13 @@ $('swc').oninput = e => { D.set.color = e.target.value; theme(); };
 $('swc').onchange = () => save();
 $('seg').onclick = e => { const b = e.target.closest('button'); if (b) { D.set.mode = b.dataset.m; theme(); save(); } };
 $('sTitle').onchange = e => { D.set.title = e.target.value.trim() || 'QR Hub'; theme(); save(); };
+$('hRun').onclick = async () => {
+  const o = $('hOut'); o.innerHTML = '<p class="none">Đang kiểm tra…</p>';
+  try {
+    const h = await api('/api/health'), row = (n, sub, ok, y, no) => `<div class="item"><div class="t"><b>${esc(n)}</b>${sub ? `<small>${esc(sub)}</small>` : ''}</div><span class="${ok ? 'okc' : 'x'}">${ok ? y : no}</span></div>`;
+    o.innerHTML = Object.entries(h.env).map(([k, v]) => row(k, '', v, 'Có', 'THIẾU')).join('') + h.files.map(f => row(f.path, f.ok ? f.info : f.error, f.ok, 'Đọc được', 'Lỗi')).join('');
+  } catch (e) { o.innerHTML = `<p class="none x">${esc(e.message)}</p>`; }
+};
 $('sLock').onclick = async () => { if (dirty) await push(); key = ''; sessionStorage.removeItem('ak'); lockUI('Đã khoá.'); };
 $('sExp').onclick = () => { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([JSON.stringify({ accounts: D.accounts, qrs: D.qrs }, null, 1)], { type: 'application/json' })); a.download = 'qr-hub-backup.json'; a.click(); };
 $('sImp').onchange = e => {
@@ -189,7 +213,8 @@ async function getBanks() {
 }
 const bankName = bin => (banks.find(b => b.bin === bin) || {}).shortName || bin;
 function fillBanks() { $('aBin').innerHTML = banks.map(b => `<option value="${esc(b.bin)}">${esc(b.shortName)} - ${esc(b.name)}</option>`).join('') || '<option value="">Không tải được danh sách, kiểm tra mạng</option>'; }
-getBanks().then(b => { banks = b || []; fillBanks(); render(); }).catch(() => { fillBanks(); });
+const FALLBACK = [['970436', 'Vietcombank'], ['970415', 'VietinBank'], ['970418', 'BIDV'], ['970405', 'Agribank'], ['970407', 'Techcombank'], ['970422', 'MB'], ['970416', 'ACB'], ['970432', 'VPBank'], ['970423', 'TPBank'], ['970403', 'Sacombank'], ['970437', 'HDBank'], ['970441', 'VIB'], ['970443', 'SHB'], ['970448', 'OCB'], ['970426', 'MSB'], ['970440', 'SeABank'], ['970431', 'Eximbank'], ['970449', 'LPBank'], ['970428', 'Nam A Bank'], ['970409', 'Bac A Bank']].map(([bin, n]) => ({ bin, shortName: n, name: n + ' (danh sách dự phòng)' }));
+getBanks().then(b => { banks = b && b.length ? b : FALLBACK; fillBanks(); render(); }).catch(() => { banks = FALLBACK; fillBanks(); render(); });
 
 /* ---------- QR chuyển khoản ---------- */
 const accOf = id => D.accounts.find(a => a.id === id);
@@ -246,7 +271,9 @@ $('lAdd').onclick = async () => {
 };
 async function loadLinks() {
   if (!ready) return;
-  try { links = await api('/api/links'); } catch (e) { $('lList').innerHTML = `<p class="none">${esc(e.message)}</p>`; return; }
+  const n = loadLinks.n = (loadLinks.n || 0) + 1; $('lList').innerHTML = '<p class="none">Đang tải…</p>';
+  try { const r = await api('/api/links'); if (n !== loadLinks.n) return; links = Array.isArray(r) ? r : []; }
+  catch (e) { if (n === loadLinks.n) $('lList').innerHTML = `<p class="none x">${esc(e.message)}</p><button class="btn" data-a="retryLinks" style="margin-top:8px">Thử lại</button>`; return; }
   $('lList').innerHTML = links.map(l => `<div class="item"><div class="t"><b>${esc(shortOf(l.code))}</b><small>${esc(l.url)} · ${l.clicks || 0} click · ${esc(String(l.created || '').slice(0, 10))}</small></div>
    <div class="acts"><button class="btn" data-a="cpLink" data-id="${esc(l.code)}" aria-label="Sao chép link">${ic('copy')}</button><button class="btn" data-a="qrLink" data-id="${esc(l.code)}" aria-label="Tải mã QR">${ic('qr')}</button><button class="btn x" data-a="delLink" data-id="${esc(l.code)}" aria-label="Xoá link">${ic('trash')}</button></div></div>`).join('') || '<p class="none">Chưa có link nào.</p>';
 }
@@ -267,14 +294,16 @@ $('aAdd').onclick = () => {
 /* ---------- nhật ký ---------- */
 async function loadLogs() {
   if (!ready) return;
-  try { logs = await api('/api/logs'); } catch (e) { $('lgStat').className = 'cn bad'; $('lgStat').textContent = e.message; return; }
+  const n = loadLogs.n = (loadLogs.n || 0) + 1; $('lgStat').className = 'cn'; $('lgStat').textContent = 'Đang tải…'; $('lgList').innerHTML = '';
+  try { const r = await api('/api/logs'); if (n !== loadLogs.n) return; logs = Array.isArray(r) ? r : []; }
+  catch (e) { if (n === loadLogs.n) { $('lgStat').className = 'cn bad'; $('lgStat').textContent = e.message; $('lgList').innerHTML = '<button class="btn" data-a="retryLogs">Thử lại</button>'; } return; }
   drawLogs();
 }
 function drawLogs() {
   const list = logs.filter(l => logFilter === 'all' || l.type === logFilter);
   $('lgStat').className = 'cn';
   $('lgStat').textContent = `${logs.filter(l => l.type === 'click').length} lượt click · ${logs.filter(l => l.type === 'create').length} link đã tạo · hiển thị tối đa 500 mục gần nhất`;
-  $('lgList').innerHTML = list.map(l => `<div class="item"><div class="t"><b>${l.type === 'click' ? 'Click' : 'Tạo link'} · ${esc(l.code)}</b><small>${esc(new Date(l.t).toLocaleString('vi-VN'))} · ${esc(l.ip || 'ẩn danh')}${l.ref ? ' · từ ' + esc(l.ref) : ''}</small><small>${esc(l.url)}</small></div></div>`).join('') || '<p class="none">Chưa có dữ liệu.</p>';
+  $('lgList').innerHTML = list.map(l => `<div class="item"><div class="t"><b>${l.type === 'click' ? 'Click' : 'Tạo link'} · ${esc(l.code)}</b><small>${esc((isNaN(new Date(l.t)) ? String(l.t || '') : new Date(l.t).toLocaleString('vi-VN')))} · ${esc(l.ip || 'ẩn danh')}${l.ref ? ' · từ ' + esc(l.ref) : ''}</small><small>${esc(l.url)}</small></div></div>`).join('') || '<p class="none">Chưa có dữ liệu.</p>';
 }
 $('lgSeg').onclick = e => { const b = e.target.closest('button'); if (!b) return; logFilter = b.dataset.f; QA('#lgSeg button').forEach(x => x.classList.toggle('on', x === b)); drawLogs(); };
 $('lgCsv').onclick = () => {
@@ -301,12 +330,23 @@ const ACT = {
   delQR(id) { D.qrs = D.qrs.filter(x => x.id !== id); save(); },
   editAcc(id) { const a = accOf(id); if (!a) return; eid = id; $('aAlias').value = a.alias || ''; $('aStk').value = a.stk; $('aName').value = a.name; $('aBin').value = a.bin; $('aTpl').value = a.template || 'compact2'; $('aAdd').textContent = 'Lưu thay đổi'; $('aTitle').textContent = 'Sửa tài khoản'; $('aCancel').hidden = false; $('aAlias').focus(); },
   delAcc(id) { const n = D.qrs.filter(q => q.accId === id).length; if (!confirm('Xoá tài khoản này' + (n ? ` và ${n} mẫu QR liên quan` : '') + '?')) return; D.accounts = D.accounts.filter(a => a.id !== id); D.qrs = D.qrs.filter(q => q.accId !== id); if (eid === id) resetAcc(); save(); },
+  retryLinks() { loadLinks(); },
+  retryLogs() { loadLogs(); },
   cpLink(c) { copyTxt(shortOf(c)); },
   qrLink(c) { dl(qrOfText(shortOf(c)), `qr-${c}.png`); },
   async delLink(c) { if (!confirm(`Xoá link ${c}?`)) return; try { await api('/api/links?code=' + encodeURIComponent(c), 'DELETE'); loadLinks(); toast('Đã xoá link'); } catch (e) { toast(e.message, true); } }
 };
 document.body.addEventListener('click', e => { const b = e.target.closest('[data-a]'); if (b && ACT[b.dataset.a]) ACT[b.dataset.a](b.dataset.id); });
 $('sync').onclick = () => ready && show('set');
+
+/* ---------- phím tắt: Alt + chữ cái ---------- */
+const KEYS = { KeyQ: 'qr', KeyN: 'quick', KeyL: 'link', KeyT: 'acc', KeyK: 'log', KeyC: 'set' };
+document.addEventListener('keydown', e => {
+  if (!e.altKey || e.ctrlKey || e.metaKey || !ready) return;
+  if (e.code === 'KeyB') { e.preventDefault(); return window.QuickLinks && window.QuickLinks.open(); }
+  if (e.code === 'KeyA') { e.preventDefault(); show('qr'); $('bAmt').focus(); $('bAmt').select(); return; }
+  if (KEYS[e.code]) { e.preventDefault(); show(KEYS[e.code]); }
+});
 
 /* ---------- khởi động ---------- */
 theme(); setSync('Đang khoá', false);
