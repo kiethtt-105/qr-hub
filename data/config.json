@@ -1,0 +1,9 @@
+{
+  "bank": { "bin": "970436", "bankName": "Vietcombank", "accountNo": "", "accountName": "" },
+  "qrTemplate": "compact2",
+  "transactionTemplates": [
+    { "name": "Thanh toán đơn hàng", "content": "TT don {ma}" },
+    { "name": "Chuyển khoản", "content": "CK {ma}" }
+  ],
+  "display": { "title": "Quét mã để chuyển khoản", "showAmount": true, "showAccount": true }
+}
